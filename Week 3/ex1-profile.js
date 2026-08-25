@@ -72,7 +72,7 @@ const StudentService = class {
     };
 
     static getIntroductionProfileById = function(id) {
-        const studentInfo = StudentService.getStudentDetailsById(id);
+        const studentInfo = this.getStudentDetailsById(id);
         if (!studentInfo) {
             return { success: false, message: "Student Not Found" };
         }
@@ -90,7 +90,7 @@ const StudentService = class {
             age: studentInfo.age,
             classEnrolled: studentInfo.classEnrolledThisYear,
             field: fieldInfo.fieldName,
-            graduationYear: StudentService.calculateGraduationYear(
+            graduationYear: this.calculateGraduationYear(
                 studentInfo.admissionYear,
                 studentInfo.programDurationYear,
                 studentInfo.surplusDurationYear
