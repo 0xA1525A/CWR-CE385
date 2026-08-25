@@ -125,12 +125,12 @@ const FieldService = class {
 };
 
 const FormatterService = class {
-    static removeTemplateSourceIndent(message) {
+    static removeTemplateSourceIndent = function(message) {
         // this one means replacing any length of whitespace/tab in the beginning of everyline with nothing.
         return message.replace(/^[ \t]+/gm, '');
     }
 
-    static formatIntroductionCard(profile) {
+    static formatIntroductionCard = function(profile) {
         const template = this.removeTemplateSourceIndent(`\
             ===== Introduction Card =====
             Nickname:\t${profile.nickname}
@@ -147,7 +147,7 @@ const FormatterService = class {
 };
 
 const StudentView = class {
-    static getIntroductionCardById(id) {
+    static getIntroductionCardById = function(id) {
         const profile = StudentService.getIntroductionProfileById(id);
         if (!profile.success) {
             return profile.message;
