@@ -19,12 +19,16 @@ console.log("\n[PART 2: Q&A]");
 console.log("Q: what's the output of `typeof null`, and in reality, is that correct?");
 console.log(`A: the output of \`typeof null\` is "${typeof null}", it is a well-known bug that cannot be fixed easily because everything will just collapse.`);
 
-let uninitialisedVar;
-console.log("Q: what's the value of an uninitialised variable?");
-console.log(`A: It's "${uninitialisedVar}".`);
+let undefinedVariable;
+console.log("Q: what's the value of an undefined variable?");
+console.log(`A: It's "${undefinedVariable}".`);
 
 console.log("Q: what's the routput of `typeof NaN`?");
-console.log(`A: It's "${typeof Number("abc")}"`);
+
+// Number(v) parsed a `v` value into a number-typed value.
+// if failed: this returns `NaN`.
+let typeofNaN = typeof Number("abc");
+console.log(`A: It's "${typeofNaN}"`);
 
 console.log("\n[PART 3: TYPE CASTING]");
 
@@ -35,9 +39,12 @@ let inputAgeNumber = Number(inputAge);
     inputAgeNumber = inputAgeNumber + 5;
 console.log(`3.1: inputAge: string -> number + 5: ${inputAgeNumber}`);
 
+// note to self: `toFixed` method returns a value of type `STRING` for some reason.
+// i hate javascript. nothing makes sense here :(.
 let inputScoreNumber = Number(inputScore).toFixed(1);
 console.log(`3.2: inputScore: string -> number %f.1 ${inputScoreNumber}`);
 
+// expl: `===` compares both the values AND the types-
+// even with the same value, but in a different type will return false.
 console.log(`3.3: inputAge === 20 returns ${inputAge === 20}`);
 console.log(`     Number(inputAge) === 20 retuns ${Number(inputAge) === 20}`);
-console.log("Expl: `===` compares both the values AND the types. - event with the same value, but in a different type will return false.");
