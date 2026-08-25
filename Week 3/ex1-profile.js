@@ -128,7 +128,7 @@ const FormatterService = class {
     static removeTemplateSourceIndent = function(message) {
         // this one means replacing any length of whitespace/tab in the beginning of everyline with nothing.
         return message.replace(/^[ \t]+/gm, '');
-    }
+    };
 
     static formatIntroductionCard = function(profile) {
         const template = this.removeTemplateSourceIndent(`\
@@ -143,7 +143,7 @@ const FormatterService = class {
         `);
 
         return template;
-    }
+    };
 };
 
 const StudentView = class {
@@ -154,13 +154,12 @@ const StudentView = class {
         }
 
         return FormatterService.formatIntroductionCard(profile);
-    }
+    };
 };
 
 
 // this simulates function call from another function.
 (function() {
-    // this one will return data in object, cannot be displayed beautifully as requested.
     const card = StudentView.getIntroductionCardById("67111176");
 
     console.log(card);
