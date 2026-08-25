@@ -1,73 +1,167 @@
-// simulating retreiving student info from db.
-function getStudentInfoById(studentId) {
-    // imagine there's db code here.
-    return {
-        personal: {
+const SYS_CONFIGS = {
+    VALID_STUDENT_ID_LENGTH: 8,
+    VALID_FIELD_ID_LENGTH: 7
+};
+
+// example db and tables structure.
+const UniDB = class {
+    static Staff = {
+        "CITE-CE-P1234": {
+            staffId: "CITE-CE-P1234",
+            firstName: "Anutin",
+            lastName: "Oniichan",
+            telCode: "66",
+            telNumber: "969439775"
+        }
+    };
+
+    static Fields = {
+        "CITE-CE": {
+            fieldId: "CITE-CE",
+            fieldName: "Computer Engineering",
+            principalsStaffId: this.Staff["CITE-CE-P1234"].staffId,
+        }
+    };
+
+    static Students = {
+        "67111176": {
+            studentId: "67111176",
             firstName: "Natthakit",
             lastName:  "Thawaichai",
             nickname:  "Art",
-
-            studentId: studentId,
-            age:       20
-        },
-        academic: {
-            studyField: "CITE-CE",
-            classEnrolledThisYear: {
-                total:   6,
-                classes: ["CE101", "CE306", "CE385", "HW106", "HW384", "GE176"]
-            },
+            age: 20,
+            studyField: this.Fields["CITE-CE"].fieldId,
+            classEnrolledThisYear: 6,
             admissionYear:       2026,
             programDurationYear: 4,
             surplusDurationYear: 0,
             currentYear:         3
-        },
-        // ...
+        }
     };
-}
+};
 
-function getFieldInfoById(fieldId) {
-    // magic.
-    return {
-        fieldId: fieldId,
-        fieldName: "Computer Engineering",
-        principalsStaffId: "CITE-CE-P1234",
-        // ...
+const StudentRepository = class {
+    static getById = function(id) {
+        // this is intentional - as it returns undefined if `id` not found.
+        return UniDB.Students[id];
+    };
+};
+
+const FieldRepository = class {
+    static getById = function(id) {
+        return UniDB.Fields[id];
+    };
+};
+
+const StudentService = class {
+    static isIdValid = function(id) {
+        return (
+            typeof id === "string"
+        &&  id.length === SYS_CONFIGS.VALID_STUDENT_ID_LENGTH
+        &&  id.trim() === id
+        );
+    };
+
+    static getStudentDetailsById = function(id) {
+        if (!this.isIdValid(id)) {
+            return undefined;
+        }
+
+        const studentDetails = StudentRepository.getById(id);
+        return studentDetails;
+    };
+
+    static getIntroductionProfileById = function(id) {
+        const studentInfo = StudentService.getStudentDetailsById(id);
+        if (!studentInfo) {
+            return { success: false, message: "Student Not Found" };
+        }
+
+        const fieldInfo = FieldService.getFieldDetailsById(studentInfo.studyField);
+        if (!fieldInfo) {
+            return { success: false, message: "Field Not Found" };
+        }
+
+        // sends only necessary data.
+        return {
+            success: true,
+            studentId: id,
+            nickname: studentInfo.nickname,
+            age: studentInfo.age,
+            classEnrolled: studentInfo.classEnrolledThisYear,
+            field: fieldInfo.fieldName,
+            graduationYear: StudentService.calculateGraduationYear(
+                studentInfo.admissionYear,
+                studentInfo.programDurationYear,
+                studentInfo.surplusDurationYear
+            )
+        };
+    };
+
+    static calculateGraduationYear = function(
+        admissionYear, programDurationYear, surplusDurationYear
+    ) {
+        return admissionYear + programDurationYear + surplusDurationYear;
+    };
+};
+
+const FieldService = class {
+    static isIdValid = function(id) {
+        return (
+            typeof id === "string"
+        &&  id.length === SYS_CONFIGS.VALID_FIELD_ID_LENGTH
+        &&  id.trim() === id
+        );
+    };
+
+    static getFieldDetailsById = function(id) {
+        if (!this.isIdValid(id)) {
+            return undefined;
+        }
+
+        const fieldDetails = FieldRepository.getById(id);
+        return fieldDetails;
+    };
+};
+
+const FormatterService = class {
+    static removeTemplateSourceIndent(message) {
+        // this one means replacing any length of whitespace/tab in the beginning of everyline with nothing.
+        return message.replace(/^[ \t]+/gm, '');
     }
-}
 
-function calculateGraduationYear(admissionYear, programDurationYear, surplusDurationYear, currentYear) {
-    return admissionYear + (programDurationYear + surplusDurationYear - currentYear);
-}
+    static formatIntroductionCard(profile) {
+        const template = this.removeTemplateSourceIndent(`\
+            ===== Introduction Card =====
+            Nickname:\t${profile.nickname}
+            Student ID:\t${profile.studentId}
+            Age:\t\t${profile.age}
+            Field:\t\t${profile.field}
+            Enrolled In:\t${profile.classEnrolled} class(es)
+            Graduation Year:\t${profile.graduationYear}
+            ==============================\
+        `);
 
-function formatIntroductionCard(studentInfo) {
-    const nickname  = studentInfo.personal.nickname;
-    const studentId = studentInfo.personal.studentId;
-    const age       = studentInfo.personal.age;
-    const totalClassEnrolled = studentInfo.academic.classEnrolledThisYear.total;
+        return template;
+    }
+};
 
-    const field     = getFieldInfoById(studentInfo.academic.studyField).fieldName;
-    const graduationYear = calculateGraduationYear(
-                               studentInfo.academic.admissionYear,
-                               studentInfo.academic.programDurationYear,
-                               studentInfo.academic.surplusDurationYear,
-                               studentInfo.academic.currentYear
-                           );
+const StudentView = class {
+    static getIntroductionCardById(id) {
+        const profile = StudentService.getIntroductionProfileById(id);
+        if (!profile.success) {
+            return profile.message;
+        }
 
-    return `\
-    ===== Introduction Card =====
-    Nickname:\t\t${nickname}
-    Student ID:\t\t${studentId}
-    Age:\t\t${age}
-    Field:\t\t${field}
-    Enrolled In:\t${totalClassEnrolled} class(es)
-    Graduation Year:\t${graduationYear}
-    ==============================`;
-}
+        return FormatterService.formatIntroductionCard(profile);
+    }
+};
 
-// main function:
+
+// this simulates function call from another function.
 (function() {
-    const studentInfo = getStudentInfoById("67111176");
-    const introductionCard = formatIntroductionCard(studentInfo);
+    // this one will return data in object, cannot be displayed beautifully as requested.
+    const card = StudentView.getIntroductionCardById("67111176");
 
-    console.log(introductionCard);
+    console.log(card);
 })();
