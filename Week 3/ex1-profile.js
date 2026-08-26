@@ -153,10 +153,11 @@ const StudentView = class {
             return profile.message;
         }
 
-        return FormatterService.formatIntroductionCard(profile);
+        const formattedMessage = FormatterService.formatIntroductionCard(profile);
+
+        return formattedMessage;
     };
 };
-
 
 // this simulates function call from another function.
 (function() {

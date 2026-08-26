@@ -3,5 +3,5 @@ By Natthakit Thawaichai
 
 ```
 Current Status: Just completed basic functionalities.
-Ongoing: Refractoring Week 3's homeworks...
+Ongoing: Polishing and Refining codes to meet assignment requirements.
 ```

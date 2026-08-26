@@ -3,6 +3,8 @@ const AVAILABLE_SIZES = ["Regular", "Upgraded", "Jumbo"];
 
 function getMenuPrice(menu) {
     switch (menu) {
+        // this is intentional-
+        // implementing fall-through behaviour as assignment assigned.
         case "Fried Rice":
         case "Hainanese Chicken Rice":
         case "Red BBQ Pork with Rice":
@@ -18,10 +20,14 @@ function getMenuPrice(menu) {
 
 function getSizeMultiplier(size) {
     switch (size) {
-        case "Regular": return 1;
-        case "Upgraded": return 1.5;
-        case "Jumbo":   return 2;
-        default:        return 1;
+        case "Regular":
+            return 1;
+        case "Upgraded":
+            return 1.5;
+        case "Jumbo":
+            return 2;
+        default:
+            return 1;
     }
 }
 
@@ -32,14 +38,15 @@ function isOrderValid(orders) {
 }
 
 function isIndividualOrderValid(order) {
-    return (typeof order === typeof {}
-        && order.hasOwnProperty("menu")
-        && order.hasOwnProperty("size")
-        && order.hasOwnProperty("qty")
-        && getMenuPrice(order.menu) !== 0
-        && order.qty > 0
-        && Number.isFinite(order.qty)
-        && !Number.isNaN(order.qty)
+    return (
+        typeof order === "object"
+    &&  order.hasOwnProperty("menu")
+    &&  order.hasOwnProperty("size")
+    &&  order.hasOwnProperty("qty")
+    &&  getMenuPrice(order.menu) !== 0
+    &&  order.qty > 0
+    &&  Number.isFinite(order.qty)
+    &&  !Number.isNaN(order.qty)
     );
 }
 
@@ -51,7 +58,7 @@ function removeMalformedOrders(orders) {
     return validOrders;
 }
 
-function normaliseImproperSizes(improperSize) {
+function normaliseImproperSize(improperSize) {
     let size = improperSize;
     if (!AVAILABLE_SIZES.includes(size)) {
         size = "Regular";
@@ -65,11 +72,12 @@ function calculateTotalOrder(orders) {
         return undefined;
     }
 
-    let validOrders = removeMalformedOrders(orders);
+    const validOrders = removeMalformedOrders(orders);
     let result = {
         grandTotalTHB: 0.0,
         orders: {}
     };
+
 
     validOrders.forEach(function(order) {
         if (!result.orders.hasOwnProperty(order.menu)) {
@@ -80,9 +88,8 @@ function calculateTotalOrder(orders) {
             }
         };
 
-        let currentOrderPrice = Number((getMenuPrice(order.menu) * getSizeMultiplier(order.size) * order.qty).toFixed(N_DECIMAL_POINT));
-
-        let size = normaliseImproperSizes(order.size);
+        const currentOrderPrice = Number((getMenuPrice(order.menu) * getSizeMultiplier(order.size) * order.qty).toFixed(N_DECIMAL_POINT));
+        const size = normaliseImproperSize(order.size);
 
         result.orders[order.menu].sizes[size] += order.qty;
         result.orders[order.menu].qty += order.qty;
@@ -95,8 +102,10 @@ function calculateTotalOrder(orders) {
 
 function formatReceipt(calculatedOrder) {
     let menuList = "";
+    let total = `\n|>>> GRAND TOTAL: ${calculatedOrder.grandTotalTHB}.-`;
+
     for (const [menu, details] of Object.entries(calculatedOrder.orders)) {
-        menuList += `\n| # ${menu} *${details.qty}`;
+        menuList += `\n|>> ${menu} *${details.qty}`;
 
         for (const [size, qty] of Object.entries(details.sizes)) {
             if (qty === 0) {
@@ -106,10 +115,10 @@ function formatReceipt(calculatedOrder) {
             const perServingPrice = getMenuPrice(menu) * getSizeMultiplier(size);
             menuList += `\n|       |- ${size} *${qty} ${perServingPrice}.-/Serving: ${perServingPrice * qty}.-`
         }
-        menuList += `\n| > Menu Total: ${details.totalTHB}.-\n|`
+        menuList += `\n| # Menu Total: ${details.totalTHB}.-\n|-----`
     }
 
-    return `\[ RECEIPT ] =>------------------------------------${menuList}`;
+    return `[RECEIPT] =>--------------------------------${menuList}${total}`;
 }
 
 (function() {

@@ -45,6 +45,7 @@ const UserRepository = class {
 
 const UserInputService = class {
     static normaliseWhitespace = function(input) {
+        // supposed to do more things here but this is just demonstration.
         return input.trim();
     };
 };
