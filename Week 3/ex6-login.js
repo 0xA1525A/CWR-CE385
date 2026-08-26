@@ -5,7 +5,7 @@ const SYS_CONFIGS = {
 const HTTP_STATUS = {
     OK: 200,
     BAD_REQUEST: 400,
-    UNAUTHORISED: 401,
+    UNAUTHORIZED: 401,
     FORBIDDEN: 403
 };
 
@@ -143,7 +143,7 @@ const AuthService = class {
         const account = this.getLoginAccountByUsername(username);
         if (!account || !this.verifyPassword(password, account.password)) {
             return {
-                status: HTTP_STATUS.UNAUTHORISED,
+                status: HTTP_STATUS.UNAUTHORIZED,
                 message: "Incorrect Username or Password"
             };
         }
