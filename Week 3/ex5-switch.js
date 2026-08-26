@@ -138,7 +138,7 @@ function formatReceipt(calculatedOrder) {
             size: "Jumbo",
             qty: 3
         },
-        {
+        { // order a menu that doesnt exist.
             menu: "Deepfried Anutin",
             size: "I'm So Rich",
             qty: 1
@@ -148,9 +148,9 @@ function formatReceipt(calculatedOrder) {
             size: "Zaab Ely",
             qty: -1
         },
-        {
+        { // invalid size, defaults to regular.
             menu: "Pad Thai",
-            size: "Regular",
+            size: "What",
             qty: 1
         }
     ];
