@@ -2,6 +2,13 @@ const SYS_CONFIGS = {
     MIN_ELIGIBLE_AGE: 18
 };
 
+const HTTP_STATUS = {
+    OK: 200,
+    BAD_REQUEST: 400,
+    UNAUTHORISED: 401,
+    FORBIDDEN: 403
+};
+
 const Database = class {
     static Users = [
         {
@@ -104,12 +111,18 @@ const AuthService = class {
         return (inputPassword === accountPassword);
     };
 
+    // this function exists because in a real database, there's a lot more attribute that an account holds.
+    // this demonstrates data extraction and only returns data that is generally required.
+    // but in this case - the data required is all we stored so it may looked weird.
     static getLoginAccountByUsername = function(username) {
         const account = UserRepository.getByUsername(username);
         if (!account) {
             return undefined;
         }
 
+        // cherry-picking only the neccessary ones.
+        // if this function runs `SELECT password, role ... FROM users`, which it should-
+        // this function will instead be inside `UserRepository` layer.
         return {
             password: account.password,
             role: account.role,
@@ -122,7 +135,7 @@ const AuthService = class {
         const areInputsValid = this.validateInputCredentials(username, password);
         if (!areInputsValid.valid) {
             return {
-                success: false,
+                status: HTTP_STATUS.BAD_REQUEST,
                 message: areInputsValid.message
             };
         }
@@ -130,14 +143,14 @@ const AuthService = class {
         const account = this.getLoginAccountByUsername(username);
         if (!account || !this.verifyPassword(password, account.password)) {
             return {
-                success: false,
+                status: HTTP_STATUS.UNAUTHORISED,
                 message: "Incorrect Username or Password"
             };
         }
 
         if (!account.isActive) {
             return {
-                success: false,
+                status: HTTP_STATUS.FORBIDDEN,
                 message: "Account Disabled"
             };
         }
@@ -145,13 +158,13 @@ const AuthService = class {
         const age = UserService.calculateAge(account.yearOfBirth);
         if (!this.isAgeEligible(age)) {
             return {
-                success: false,
+                status: HTTP_STATUS.FORBIDDEN,
                 message: "Ineligible Age"
             };
         }
 
         return {
-            success: true,
+            status: HTTP_STATUS.OK,
             username: username,
             role: account.role
         };
@@ -159,19 +172,23 @@ const AuthService = class {
 };
 
 const FormatterService = class {
-    static formatLoginSuccess = function(username, role) {
-        return `Login Success! ${username}/${role}`;
+    static formatLoginSuccess = function(status, username, role) {
+        return `Login Succeed! HTTP${status}\n> Logged in as @${username} with "${role}" role.`;
+    };
+
+    static formatLoginFailure = function(status, message) {
+        return `Login Failed! HTTP/${status}\n> ${message}.`;
     };
 };
 
 const AuthController = class {
     static login = function(username, password) {
         const result = AuthService.processLogin(username, password);
-        if (!result.success) {
-            return result.message;
+        if (result.status !== HTTP_STATUS.OK) {
+            return FormatterService.formatLoginFailure(result.status, result.message);
         }
 
-        return FormatterService.formatLoginSuccess(result.username, result.role);
+        return FormatterService.formatLoginSuccess(result.status, result.username, result.role);
     };
 };
 
