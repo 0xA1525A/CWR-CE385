@@ -59,16 +59,25 @@ const ScoreService = class {
 
     static getScoreSummary(subjectId, studentId) {
         if (!this.isSubjectIdValid(subjectId)) {
-            return { success: false, message: "Invalid Subject ID" };
+            return {
+                success: false,
+                message: "Invalid Subject ID"
+            };
         }
 
         if (!this.isStudentIdValid(studentId)) {
-            return { success: false, message: "Invalid Student ID" };
+            return {
+                success: false,
+                message: "Invalid Student ID"
+            };
         }
 
         const score = ScoreRepository.getScoreById(subjectId, studentId);
         if (!score) {
-            return { success: false, message: "Score Not Found" };
+            return {
+                success: false,
+                message: "Score Not Found"
+            };
         }
 
         // calculate x out of z when x out of y; while the actual score is 20 out of z.
@@ -121,15 +130,16 @@ const FormatterService = class {
 };
 
 const ScoreView = class {
+    // note to self: this function does one thing which is orchestration.
+    // it does a lot of thing, call->check->call, that's orchestration.
+    // not a business logic.
     static getFormattedSummaryByIds = function(subjectId, studentId) {
         const summary = ScoreService.getScoreSummary(subjectId, studentId);
         if (!summary.success) {
             return summary.message;
         }
 
-        const formattedSummary = FormatterService.formatSummary(summary);
-
-        return formattedSummary;
+        return FormatterService.formatSummary(summary);
     };
 };
 
