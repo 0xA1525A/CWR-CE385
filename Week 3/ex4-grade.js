@@ -1,14 +1,11 @@
 function isScoreValid(score) {
-    if (typeof score !== "number"
-        || score < 0
-        || score > 100
-        || Number.isNaN(score)
-        || !Number.isFinite(score)
-    ) {
-        return false;
-    }
-    return true;
-};
+    return (
+        typeof score === "number"
+    &&  score >= 0
+    &&  score <= 100
+    &&  !Number.isNaN(score)
+    );
+}
 
 function toGrade(score) {
     if (!isScoreValid(score)) {
