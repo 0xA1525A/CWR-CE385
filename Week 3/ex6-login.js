@@ -1,174 +1,216 @@
-const USERS = [
-    {
-        username: "admin",
-        password: "ce385pass",
-        role: "professor",
-        isActive: true
-    },
-    {
-        username: "natthakit",
-        password: "1234",
-        role: "student",
-        isActive: true
-    },
-    {
-        username: "randomdude",
-        password: "whyamihere",
-        role: "student",
-        isActive: false
-    },
-    {
-        username: "iloveroblox",
-        password: "6767676767",
-        role: "student",
-        isActive: true
-    },
-];
+const SYS_CONFIGS = {
+    MIN_ELIGIBLE_AGE: 18
+};
 
-function loginResponse(statusCode, message, username, hasAdminAccess) {
-    return {
-        status: statusCode,
-        message: message,
-        session: {
-            username: username,
-            hasAdminAccess: hasAdminAccess
-        }
-    };
-}
-
-function sanitiseUserInput(input) {
-    const output = String(input).replace(/[^a-zA-Z0-9_-]/g, "");
-    return output;
-}
-
-function areCredentialsValid(username, password) {
-    return (
-        username !== ""
-        && username !== undefined
-        && password !== ""
-        && password !== undefined
-    );
-}
-
-function queryUserByUsername(username) {
-    const foundUser = USERS.find(function(user) {
-        return user.username === username;
-    });
-
-    return foundUser;
-}
-
-function isUserExist(username) {
-    return queryUserByUsername(username) !== undefined;
-}
-
-function getLoginCredentialsByUsername(username) {
-    const user = queryUserByUsername(username);
-
-    return {
-        password: user.password,
-        isActive: user.isActive,
-        role: user.role
-    };
-}
-
-function isPasswordCorrect(dbPassword, password) {
-    return dbPassword === password;
-}
-
-function isAccountActive(accountData) {
-    return accountData.isActive;
-}
-
-function isAgeValid(age) {
-    return (
-        typeof age === typeof 0
-        && age >= 18
-        && Number.isFinite(age)
-        && !Number.isNaN(age)
-    );
-}
-
-function handleLogin(dirtyUsername, dirtyPassword, dirtyAge) {
-    const username = sanitiseUserInput(dirtyUsername);
-    const password = sanitiseUserInput(dirtyPassword);
-    const age      = Number(sanitiseUserInput(dirtyAge));
-
-    if (!areCredentialsValid(username, password)) {
-        const HTTP_UNAUTHORISED = 401;
-        const MESSAGE = "Invalid field data. Please try again";
-
-        return loginResponse(HTTP_UNAUTHORISED, MESSAGE, null, null);
-    }
-
-    if (!isUserExist(username)) {
-        const HTTP_UNAUTHORISED = 401;
-        const MESSAGE = "User does not exists";
-
-        return loginResponse(HTTP_UNAUTHORISED, MESSAGE, null, null);
-    }
-
-    const credentials = getLoginCredentialsByUsername(username);
-
-    if (!isPasswordCorrect(credentials.password, password)) {
-        const HTTP_UNAUTHORISED = 401;
-        const MESSAGE = "Incorrect username or password";
-
-        return loginResponse(HTTP_UNAUTHORISED, MESSAGE, null, null);
-    }
-
-    if (!credentials.isActive) {
-        const HTTP_UNAUTHORISED = 401;
-        const MESSAGE = "Your account has been disbaled. Please contact System Administrator/Professor";
-
-        return loginResponse(HTTP_UNAUTHORISED, MESSAGE, null, null);
-    }
-
-    if (!isAgeValid(age)) {
-        const HTTP_UNAUTHORISED = 401;
-        const MESSAGE = "Invalid age";
-
-        return loginResponse(HTTP_UNAUTHORISED, MESSAGE, null, null);
-    }
-
-    return { good: true }
-}
-
-(function() {
-    const loginAttempts = [
+const Database = class {
+    static Users = [
         {
             username: "admin",
             password: "ce385pass",
-            age: 25
+            role: "professor",
+            yearOfBirth: 1999,
+            isActive: true
         },
         {
             username: "natthakit",
             password: "1234",
-            age: 25
-        },
-        {
-            username: "natthakit",
-            password: "asasdasdasd",
-            age: 25
-        },
-        {
-            username: "okpsokfpdkgpodfkg",
-            password: "1234",
-            age: 25
+            role: "student",
+            yearOfBirth: 2006,
+            isActive: true
         },
         {
             username: "randomdude",
             password: "whyamihere",
-            age: 25
+            role: "student",
+            yearOfBirth: 2005,
+            isActive: false
         },
         {
             username: "iloveroblox",
             password: "6767676767",
-            age: 13
+            role: "student",
+            yearOfBirth: 2014,
+            isActive: true
+        }
+    ];
+};
+
+const UserRepository = class {
+    static getByUsername = function(username) {
+        return Database.Users.find(function(user) {
+            return user.username === username;
+        });
+    };
+};
+
+const UserInputService = class {
+    static normaliseWhitespace = function(input) {
+        return input.trim();
+    };
+};
+
+const UserService = class {
+    static calculateAge = function(yearOfBirth) {
+        return (new Date()).getUTCFullYear() - yearOfBirth;
+    };
+};
+
+const AuthService = class {
+    static isUsernameValid = function(username) {
+        return (
+            typeof username === "string"
+        &&  username === UserInputService.normaliseWhitespace(username)
+        &&  username.length > 0
+        );
+    };
+
+    static isPasswordValid = function(password) {
+        return (
+            typeof password === "string"
+        &&  password === UserInputService.normaliseWhitespace(password)
+        &&  password.length > 0
+        );
+    };
+
+    static isAgeEligible = function(age) {
+        return (age >= SYS_CONFIGS.MIN_ELIGIBLE_AGE);
+    };
+
+    static validateInputCredentials = function(username, password) {
+        if (!this.isUsernameValid(username)) {
+            return {
+                valid: false,
+                message: "Invalid Username"
+            };
+        }
+
+        if (!this.isPasswordValid(password)) {
+            return {
+                valid: false,
+                message: "Invalid Password"
+            };
+        }
+
+        return {
+            valid: true
+        };
+    };
+
+    static verifyPassword = function(inputPassword, accountPassword) {
+        // const hashedPassword = this.hashPassword(inputPassword);
+        // since this is just a classwork demonstration and the password is stored-
+        // in plaintext, there's nothing to do besides comparing the two.
+        return (inputPassword === accountPassword);
+    };
+
+    static getLoginAccountByUsername = function(username) {
+        const account = UserRepository.getByUsername(username);
+        if (!account) {
+            return undefined;
+        }
+
+        return {
+            password: account.password,
+            role: account.role,
+            isActive: account.isActive,
+            yearOfBirth: account.yearOfBirth
+        };
+    };
+
+    static processLogin = function(username, password) {
+        const areInputsValid = this.validateInputCredentials(username, password);
+        if (!areInputsValid.valid) {
+            return {
+                success: false,
+                message: areInputsValid.message
+            };
+        }
+
+        const account = this.getLoginAccountByUsername(username);
+        if (!account || !this.verifyPassword(password, account.password)) {
+            return {
+                success: false,
+                message: "Incorrect Username or Password"
+            };
+        }
+
+        if (!account.isActive) {
+            return {
+                success: false,
+                message: "Account Disabled"
+            };
+        }
+
+        const age = UserService.calculateAge(account.yearOfBirth);
+        if (!this.isAgeEligible(age)) {
+            return {
+                success: false,
+                message: "Ineligible Age"
+            };
+        }
+
+        return {
+            success: true,
+            username: username,
+            role: account.role
+        };
+    };
+};
+
+const FormatterService = class {
+    static formatLoginSuccess = function(username, role) {
+        return `Login Success! ${username}/${role}`;
+    };
+};
+
+const AuthController = class {
+    static login = function(username, password) {
+        const result = AuthService.processLogin(username, password);
+        if (!result.success) {
+            return result.message;
+        }
+
+        return FormatterService.formatLoginSuccess(result.username, result.role);
+    };
+};
+
+(function() {
+    const loginAttempts = [
+        {
+            // valid credentials (professor)
+            username: "admin",
+            password: "ce385pass"
+        },
+        {
+            // valid credentials (student)
+            username: "natthakit",
+            password: "1234"
+        },
+        {
+            // inccorect password
+            username: "natthakit",
+            password: "asasdasdasd"
+        },
+        {
+            // incorrect username
+            username: "okpsokfpdkgpodfkg",
+            password: "1234"
+        },
+        {
+            // valid credentials, account inactive
+            username: "randomdude",
+            password: "whyamihere"
+        },
+        {
+            // ineligible age
+            username: "iloveroblox",
+            password: "6767676767"
         },
     ];
 
     for (const attempt of loginAttempts) {
-        console.log(handleLogin(attempt.username, attempt.password, attempt.age));
+        console.log(
+            AuthController.login(attempt.username, attempt.password)
+        );
     }
 })();
