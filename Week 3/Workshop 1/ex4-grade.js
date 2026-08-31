@@ -1,3 +1,15 @@
+// move things together to make it easier-
+// to change things later.
+const GRADE_MIN_SCORE = {
+    A:      80,
+    B_PLUS: 75,
+    B:      70,
+    C_PLUS: 65,
+    C:      60,
+    D_PLUS: 55,
+    D:      50
+};
+
 function isScoreValid(score) {
     return (
         typeof score === "number"
@@ -11,18 +23,6 @@ function toGrade(score) {
     if (!isScoreValid(score)) {
         return "Invalid";
     }
-
-    // move things together to make it easier-
-    // to change things later.
-    const GRADE_MIN_SCORE = {
-        A:      80,
-        B_PLUS: 75,
-        B:      70,
-        C_PLUS: 65,
-        C:      60,
-        D_PLUS: 55,
-        D:      50
-    };
 
     // this is sorted in descending way because otherwise-
     // you will always get a d.

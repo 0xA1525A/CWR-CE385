@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Week 3 Exercises Explained
 
 ## ex1-profile.js - Student Profile System
@@ -57,3 +58,5 @@ When a user tries to log in, the system first validates that username and passwo
 Each validation step returns a different HTTP status code and message. Bad input returns 400. Wrong credentials return 401. Account disabled or ineligible age returns 403. Success returns 200 with the username and role.
 
 The architecture separates input validation, account lookup, business logic checks, and response formatting into different layers so each part is simple and testable.
+=======
+>>>>>>> Stashed changes
